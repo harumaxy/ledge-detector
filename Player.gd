@@ -14,10 +14,6 @@ var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 enum {Ground, GrabLedge, Climb}
 var state := Ground
 
-# GrabLedgeState
-var grabing_ledge_point := Vector3.ZERO
-
-
 func update_state():
   if state == Ground and ledge_detector.can_grab_ledge():
     self.velocity.y = 0
@@ -78,7 +74,7 @@ func ground_move(delta: float):
   move_and_slide()
 
 
-func grab_ledge(delta: float):
+func grab_ledge_move(delta: float):
   var input_x = sign(Input.get_axis("ui_left", "ui_right"))
   var vel_x = input_x * SPEED / 2
   var direction = self.basis * Vector3.RIGHT
@@ -90,14 +86,15 @@ func grab_ledge(delta: float):
     move_and_slide()
   
   
+func _process(delta: float) -> void:
+  update_state()
 
 func _physics_process(delta: float) -> void:
-  update_state()
   rotate_camera(delta)
   match state:
     Ground:
       ground_move(delta)
     GrabLedge:
-      grab_ledge(delta)
+      grab_ledge_move(delta)
       
   
