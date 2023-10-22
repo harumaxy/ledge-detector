@@ -1,5 +1,7 @@
 extends CharacterBody3D
 
+class_name Player
+
 const SPEED = 5.0
 const JUMP_VELOCITY = 9
 
@@ -11,42 +13,8 @@ const JUMP_VELOCITY = 9
 # Get the gravity from the project settings to be synced with RigidBody nodes.
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
-enum {Ground, GrabLedge, Climb}
+enum {Ground, GrabLedge, Climb, ClimbHalf}
 var state := Ground
-
-func update_state():
-  if state == Ground and ledge_detector.can_grab_ledge():
-    self.velocity.y = 0
-    var wall_nomal = ledge_detector.get_wall_nomal()
-    var tw = create_tween()
-    tw.tween_property(self, "position", self.position + ledge_detector.get_ledge_point() - $LedgeDetector/HandPoint.global_position, .1)
-    tw.parallel().tween_property(self, "basis", self.basis.looking_at(-wall_nomal), .1)
-    state = GrabLedge
-    
-    
-  if state == GrabLedge:
-    if not ledge_detector.can_grab_ledge():
-      state = Ground
-    if Input.is_action_just_pressed("jump"):
-      self.velocity.y = JUMP_VELOCITY
-      state = Ground
-      ledge_detector.disable()
-      get_tree().create_timer(0.2).timeout.connect(func(): ledge_detector.enable())
-    if Input.is_action_pressed("canncel"):
-      state = Ground
-      ledge_detector.disable()
-      get_tree().create_timer(0.2).timeout.connect(func(): ledge_detector.enable())
-    if Input.is_action_just_pressed("interact"):
-      if not ledge_detector.can_climb(): return
-      var start = self.position
-      var climb_up = self.position + $LedgeDetector/HandPoint.position.y * Vector3.UP
-      var climb_foward = climb_up + ($CollisionShape3D.shape as CapsuleShape3D).radius * 2 * (self.basis * Vector3(0, 0, -1)).normalized() 
-      state = Climb
-      var tw = create_tween()
-      tw.tween_property(self, "position", climb_up, .5)
-      tw.tween_property(self, "position", climb_foward, .5)
-      tw.tween_callback(func(): state = Ground)
-    
 
 func rotate_camera(delta: float) -> void:
   var x = Input.get_joy_axis(0, JOY_AXIS_RIGHT_X)
@@ -65,13 +33,32 @@ func ground_move(delta: float):
   var input_dir := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
   var direction := (camera_arm_pivot.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
   if direction:
+    self.basis = Basis.looking_at(direction.normalized())
     velocity.x = direction.x * SPEED
     velocity.z = direction.z * SPEED
   else:
     velocity.x = move_toward(velocity.x, 0, SPEED)
     velocity.z = move_toward(velocity.z, 0, SPEED)
-  self.rotation.y = camera_arm_pivot.rotation.y
+  
   move_and_slide()
+  # Update State
+  if ledge_detector.can_grab_ledge():
+    self.velocity.y = 0
+    var wall_nomal = ledge_detector.get_wall_nomal()
+    var tw = create_tween()
+    tw.tween_property(self, "position", self.position + ledge_detector.get_ledge_point() - $LedgeDetector/HandPoint.global_position, .1)
+    tw.parallel().tween_property(self, "basis", self.basis.looking_at(-wall_nomal), .1)
+    state = GrabLedge
+  if $CanClimbHalfRay.is_colliding() and Input.is_action_pressed("interact"):
+    var height = $CanClimbHalfRay.get_collision_point().y - self.global_position.y
+    var start = self.position
+    var climb_up = start + Vector3.UP * height
+    var climb_forward = climb_up + ($CollisionShape3D.shape as CapsuleShape3D).radius * 2 * (self.basis * Vector3(0, 0, -1)).normalized()
+    state = ClimbHalf
+    var tw = create_tween()
+    tw.tween_property(self, "position", climb_up, .2)
+    tw.tween_property(self, "position", climb_forward, .2)
+    tw.tween_callback(func(): state = Ground)
 
 
 func grab_ledge_move(delta: float):
@@ -84,10 +71,29 @@ func grab_ledge_move(delta: float):
     velocity.x = direction.x * vel_x
     velocity.z = direction.z * vel_x
     move_and_slide()
+  # Update state
+  if not ledge_detector.can_grab_ledge():
+    state = Ground
+  if Input.is_action_just_pressed("jump"):
+    self.velocity.y = JUMP_VELOCITY
+    state = Ground
+    ledge_detector.disable()
+    get_tree().create_timer(0.2).timeout.connect(func(): ledge_detector.enable())
+  if Input.is_action_pressed("canncel"):
+    state = Ground
+    ledge_detector.disable()
+    get_tree().create_timer(0.2).timeout.connect(func(): ledge_detector.enable())
+  if Input.is_action_just_pressed("interact"):
+    if not ledge_detector.can_climb(): return
+    var start = self.position
+    var climb_up = self.position + $LedgeDetector/HandPoint.position.y * Vector3.UP
+    var climb_foward = climb_up + ($CollisionShape3D.shape as CapsuleShape3D).radius * 2 * (self.basis * Vector3(0, 0, -1)).normalized() 
+    state = Climb
+    var tw = create_tween()
+    tw.tween_property(self, "position", climb_up, .5)
+    tw.tween_property(self, "position", climb_foward, .5)
+    tw.tween_callback(func(): state = Ground)
   
-  
-func _process(delta: float) -> void:
-  update_state()
 
 func _physics_process(delta: float) -> void:
   rotate_camera(delta)
