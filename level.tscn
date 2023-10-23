@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://dm8wt0tnoraeu"]
+[gd_scene load_steps=21 format=3 uid="uid://dm8wt0tnoraeu"]
 
 [ext_resource type="Script" path="res://addons/ply/nodes/ply.gd" id="1_bwird"]
 [ext_resource type="Script" path="res://addons/ply/resources/ply_mesh.gd" id="2_2uja2"]
@@ -13,6 +13,7 @@
 [ext_resource type="Material" uid="uid://m4fm1mohv8oo" path="res://addons/ply/materials/debug_material_purple.tres" id="11_b8q8d"]
 [ext_resource type="Script" path="res://Player.gd" id="12_iskfd"]
 [ext_resource type="Script" path="res://LedgeDetector.gd" id="13_7efnu"]
+[ext_resource type="Script" path="res://CameraArmPivot.gd" id="14_756tb"]
 [ext_resource type="Script" path="res://StateLabel.gd" id="14_wqba8"]
 
 [sub_resource type="ArrayMesh" id="ArrayMesh_rwh8k"]
@@ -115,14 +116,16 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.21779, -0.694352)
 
 [node name="CameraArmPivot" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.651628, 1.48506, -0.925194)
+script = ExtResource("14_756tb")
 
 [node name="CameraArm" type="SpringArm3D" parent="CameraArmPivot"]
 spring_length = 3.0
 
 [node name="CameraPivot" type="Node3D" parent="CameraArmPivot/CameraArm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.08165e-12, 2.08165e-12, 3)
 
 [node name="Camera3D" type="Camera3D" parent="CameraArmPivot/CameraArm/CameraPivot"]
-transform = Transform3D(1, 0, 0, 0, 0.83205, 0.5547, 0, -0.5547, 0.83205, 2.08165e-12, 2.124, 0.532)
+transform = Transform3D(1, 0, 0, 0, 0.83205, 0.5547, 0, -0.5547, 0.83205, 0.992271, 2.124, -0.801257)
 
 [node name="StateLabel" type="Label" parent="."]
 offset_left = 251.0

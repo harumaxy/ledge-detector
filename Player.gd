@@ -20,15 +20,6 @@ var state := Ground:
     state = v
     state_label.update(state)
 
-func rotate_camera(delta: float) -> void:
-  var x = Input.get_joy_axis(0, JOY_AXIS_RIGHT_X)
-  var y = Input.get_joy_axis(0, JOY_AXIS_RIGHT_Y)
-  var rs_dir = Vector2(x if abs(x) > .2 else 0, y if abs(y) > .2 else 0)
-  if rs_dir.length_squared() != 0:
-    camera_arm_pivot.rotate_y(-rs_dir.x * delta * 2)
-    camera_arm.rotate_x(rs_dir.y * delta * 2)
-    camera_arm.rotation_degrees.x = clamp(camera_arm.rotation_degrees.x, -60, 60)
-
 func ground_move(delta: float):
   # Update State
   if ledge_detector.can_grab_ledge():
@@ -106,7 +97,6 @@ func grab_ledge_move(delta: float):
   
 
 func _physics_process(delta: float) -> void:
-  rotate_camera(delta)
   match state:
     Ground:
       ground_move(delta)
