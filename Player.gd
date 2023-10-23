@@ -8,13 +8,17 @@ const JUMP_VELOCITY = 9
 @export var camera: Camera3D
 @export var camera_arm: Node3D
 @export var camera_arm_pivot: Node3D
+@export var state_label: Label
 @onready var ledge_detector := $LedgeDetector as LedgeDetector
 
 # Get the gravity from the project settings to be synced with RigidBody nodes.
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
-enum {Ground, GrabLedge, Climb, ClimbHalf}
-var state := Ground
+enum {Ground, Air, GrabLedge, Climb, ClimbHalf}
+var state := Ground:
+  set(v):
+    state = v
+    state_label.update(state)
 
 func rotate_camera(delta: float) -> void:
   var x = Input.get_joy_axis(0, JOY_AXIS_RIGHT_X)
@@ -46,6 +50,9 @@ func ground_move(delta: float):
     tw.tween_property(self, "position", climb_forward, .2)
     tw.tween_callback(func(): state = Ground)
     return
+  
+  state = Ground if self.is_on_floor() else Air
+  
   
   if not is_on_floor():
     velocity.y -= gravity * delta
@@ -102,6 +109,8 @@ func _physics_process(delta: float) -> void:
   rotate_camera(delta)
   match state:
     Ground:
+      ground_move(delta)
+    Air:
       ground_move(delta)
     GrabLedge:
       grab_ledge_move(delta)

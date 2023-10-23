@@ -63,12 +63,13 @@ materials = Array[Material]([ExtResource("3_otgbc"), ExtResource("4_qs2g0"), Ext
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Stage/StaticBody3D"]
 shape = SubResource("ConcavePolygonShape3D_7cxcf")
 
-[node name="Player" type="CharacterBody3D" parent="." node_paths=PackedStringArray("camera", "camera_arm", "camera_arm_pivot")]
+[node name="Player" type="CharacterBody3D" parent="." node_paths=PackedStringArray("camera", "camera_arm", "camera_arm_pivot", "state_label")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.651628, 0, -0.925194)
 script = ExtResource("12_iskfd")
 camera = NodePath("../CameraArmPivot/CameraArm/CameraPivot/Camera3D")
 camera_arm = NodePath("../CameraArmPivot/CameraArm")
 camera_arm_pivot = NodePath("../CameraArmPivot")
+state_label = NodePath("../StateLabel")
 
 [node name="RemoteTransform3D" type="RemoteTransform3D" parent="Player"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.48506, 0)
@@ -123,7 +124,7 @@ spring_length = 3.0
 [node name="Camera3D" type="Camera3D" parent="CameraArmPivot/CameraArm/CameraPivot"]
 transform = Transform3D(1, 0, 0, 0, 0.83205, 0.5547, 0, -0.5547, 0.83205, 2.08165e-12, 2.124, 0.532)
 
-[node name="StateLabel" type="Label" parent="." node_paths=PackedStringArray("player")]
+[node name="StateLabel" type="Label" parent="."]
 offset_left = 251.0
 offset_top = 169.0
 offset_right = 341.0
@@ -131,7 +132,6 @@ offset_bottom = 222.0
 theme_override_font_sizes/font_size = 72
 text = "State"
 script = ExtResource("14_wqba8")
-player = NodePath("../Player")
 
 [node name="Label" type="Label" parent="."]
 anchors_preset = 1

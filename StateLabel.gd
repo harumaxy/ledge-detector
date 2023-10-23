@@ -1,15 +1,14 @@
 extends Label
 
-@export var player : Player
 
 
-func _process(delta: float) -> void:
-  match player.state:
-    Player.Ground:
-      if player.is_on_floor():
-        self.text = "Ground"
-      else:
-        self.text = "Air"
+
+func update(state: int) -> void:
+  match state:
+    Player.Ground:  
+      self.text = "Ground"
+    Player.Air:
+      self.text = "Air"
     Player.GrabLedge:
       self.text = "GrabLedge"
     Player.Climb:
