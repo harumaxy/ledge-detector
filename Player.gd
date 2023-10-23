@@ -25,9 +25,10 @@ func ground_move(delta: float):
   if ledge_detector.can_grab_ledge():
     self.velocity.y = 0
     var wall_nomal = ledge_detector.get_wall_nomal()
+    var grab_pos = Vector3(1, 0, 1) * (ledge_detector.get_ledge_point() + wall_nomal.normalized() * .5) + Vector3.UP * self.global_position.y
     var tw = create_tween()
     tw.tween_property(self, "basis", self.basis.looking_at(-wall_nomal), .2)
-#    tw.parallel().tween_property(self, "position", self.position + ledge_detector.get_ledge_point() - $LedgeDetector/HandPoint.global_position, .4)
+    tw.parallel().tween_property(self, "global_position",  grab_pos, .4)
     state = GrabLedge
     return
   if $CanClimbHalfRay.is_colliding() and Input.is_action_pressed("interact"):
