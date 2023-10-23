@@ -26,6 +26,27 @@ func rotate_camera(delta: float) -> void:
     camera_arm.rotation_degrees.x = clamp(camera_arm.rotation_degrees.x, -60, 60)
 
 func ground_move(delta: float):
+  # Update State
+  if ledge_detector.can_grab_ledge():
+    self.velocity.y = 0
+    var wall_nomal = ledge_detector.get_wall_nomal()
+    var tw = create_tween()
+    tw.tween_property(self, "basis", self.basis.looking_at(-wall_nomal), .2)
+#    tw.parallel().tween_property(self, "position", self.position + ledge_detector.get_ledge_point() - $LedgeDetector/HandPoint.global_position, .4)
+    state = GrabLedge
+    return
+  if $CanClimbHalfRay.is_colliding() and Input.is_action_pressed("interact"):
+    var height = $CanClimbHalfRay.get_collision_point().y - self.global_position.y
+    var start = self.position
+    var climb_up = start + Vector3.UP * height
+    var climb_forward = climb_up + ($CollisionShape3D.shape as CapsuleShape3D).radius * 2 * (self.basis * Vector3(0, 0, -1)).normalized()
+    state = ClimbHalf
+    var tw = create_tween()
+    tw.tween_property(self, "position", climb_up, .2)
+    tw.tween_property(self, "position", climb_forward, .2)
+    tw.tween_callback(func(): state = Ground)
+    return
+  
   if not is_on_floor():
     velocity.y -= gravity * delta
   if Input.is_action_just_pressed("jump") and is_on_floor():
@@ -41,24 +62,6 @@ func ground_move(delta: float):
     velocity.z = move_toward(velocity.z, 0, SPEED)
   
   move_and_slide()
-  # Update State
-  if ledge_detector.can_grab_ledge():
-    self.velocity.y = 0
-    var wall_nomal = ledge_detector.get_wall_nomal()
-    var tw = create_tween()
-    tw.tween_property(self, "position", self.position + ledge_detector.get_ledge_point() - $LedgeDetector/HandPoint.global_position, .1)
-    tw.parallel().tween_property(self, "basis", self.basis.looking_at(-wall_nomal), .1)
-    state = GrabLedge
-  if $CanClimbHalfRay.is_colliding() and Input.is_action_pressed("interact"):
-    var height = $CanClimbHalfRay.get_collision_point().y - self.global_position.y
-    var start = self.position
-    var climb_up = start + Vector3.UP * height
-    var climb_forward = climb_up + ($CollisionShape3D.shape as CapsuleShape3D).radius * 2 * (self.basis * Vector3(0, 0, -1)).normalized()
-    state = ClimbHalf
-    var tw = create_tween()
-    tw.tween_property(self, "position", climb_up, .2)
-    tw.tween_property(self, "position", climb_forward, .2)
-    tw.tween_callback(func(): state = Ground)
 
 
 func grab_ledge_move(delta: float):
